@@ -1,8 +1,8 @@
-from window import Window
-from colors import Colors
-from abstractInterface import AbstractInterface
-from interacts import Button
-from triggers import TestPrintTrigger
+from WindowLib.window import Window
+from WindowLib.colors import Colors
+from WindowLib.abstractInterface import AbstractInterface
+from WindowLib.interacts import Button
+from WindowLib.triggers import TestPrintTrigger
 
 w = Window((400, 500))
 w.BG_COLOR = Colors.GOLD

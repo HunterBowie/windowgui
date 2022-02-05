@@ -1,7 +1,7 @@
 import pygame
-from clock import Clock
-from scheduler import Scheduler
-from colors import Colors
+from .clock import Clock
+from .scheduler import Scheduler
+from .colors import Colors
 
 class Window:
     def __init__(self, screen_size):

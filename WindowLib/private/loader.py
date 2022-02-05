@@ -8,12 +8,14 @@ class Loader:
     SOUNDS_DIR = path.join(CURRENT_DIR, "assets/sounds")
    
     @staticmethod
-    def load_img(path, ext=".png"):
-        full_path = path.join(Loader.IMAGES_DIR, path) + ext
+    def load_img(img_path, ext=".png"):
+        full_path = path.join(Loader.IMAGES_DIR, img_path) + ext
+        print(full_path + "----------------")
         img = pygame.image.load(full_path).convert()
         img.set_colorkey(None)
         return img
     
+    @staticmethod
     def get_button(type, color, pressed):
         button_path = ""
         if color == "white":
@@ -42,9 +44,10 @@ class Loader:
 
 
 
-    
+    @staticmethod
     def get_slider():
         pass
     
+    @staticmethod
     def get_tickbox():
         pass
