@@ -3,14 +3,13 @@ from os import path
 
 
 class Loader:
-    CURRENT_DIR = path.dirname("__file__")
+    CURRENT_DIR = path.dirname(__file__)
     IMAGES_DIR = path.join(CURRENT_DIR, "assets/images")
     SOUNDS_DIR = path.join(CURRENT_DIR, "assets/sounds")
    
     @staticmethod
     def load_img(img_path, ext=".png"):
         full_path = path.join(Loader.IMAGES_DIR, img_path) + ext
-        print(full_path + "----------------")
         img = pygame.image.load(full_path).convert()
         img.set_colorkey(None)
         return img
@@ -51,3 +50,5 @@ class Loader:
     @staticmethod
     def get_tickbox():
         pass
+
+

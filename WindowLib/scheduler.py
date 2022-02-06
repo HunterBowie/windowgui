@@ -3,19 +3,19 @@ import pygame
 class Scheduler:
     def __init__(self, window):
         self.window = window
-        self.triggers = []
+        self.commands = []
     
-    def add_trigger(self, trigger):
-        self.triggers.append(trigger)
+    def new_command(self, cmd):
+        self.commands.append(cmd)
     
     def run(self):
-        ended_triggers = []
-        for trigger in self.triggers:
-            trigger.execute()
+        ended_commands = []
+        for command in self.commands:
+            command.execute()
         
-            if trigger.is_finished():
-                trigger.end()
-                ended_triggers.append(trigger)
+            if command.is_finished():
+                command.end()
+                ended_commands.append(command)
         
-        for trigger in ended_triggers:
-            self.triggers.remove(trigger)
+        for command in ended_commands:
+            self.commands.remove(command)

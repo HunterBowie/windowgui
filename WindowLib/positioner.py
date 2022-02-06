@@ -13,8 +13,6 @@ class Positioner:
         self.center_pos = int(window.screen.get_width()/2), int(window.screen.get_height()/2)
     
     def position_interact(self, interact):
-        if not interact.tangable: 
-            raise ValueError("tried to position a untangable interact")
         x, y, width, height = interact.entity.unpack()
         new_x, new_y = 0, 0
         if self.center_x:
@@ -23,7 +21,8 @@ class Positioner:
             new_y = self.center_pos[1]-int(height/2)
         new_x += x
         new_y += y
-        interact.entity.set_pos(new_x, new_y)
+        interact.set_pos(new_x, new_y)
+
 
 
     def position_visual(self, visual):

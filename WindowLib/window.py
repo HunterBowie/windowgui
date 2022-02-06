@@ -12,7 +12,6 @@ class Window:
 
         self.running = False
         
-        self.fps = 60
         self.bg_color = Colors.RED
     
     def set_display_color(self, color):
@@ -39,6 +38,8 @@ class Window:
         self.running = False
     
     def update(self):
+        self.scheduler.run()
+        
         if self.interface:
             self.interface.update()
         else:
@@ -48,5 +49,5 @@ class Window:
 
         pygame.display.update()
         self.screen.fill(self.BG_COLOR)
-        self.clock.tick(self.FPS)
+        self.clock.update()
 
