@@ -1,6 +1,11 @@
 import pygame
+<<<<<<< HEAD:WindowLib/triggers/interacts/#implementlater.py
 from .Interact import Interact
 from ...Entity import Entity
+=======
+from .interact import Interact
+from ...entity import Entity
+>>>>>>> b27ee00ae734cc14552f5c80c4def47bfca70d74:interface/interacts/toggleButton.py
 
 class ToggleButton(Interact):
     def __init__(self, x, y, image, clicked_image, text, triggers, label=None, scale=None, positioner=None):
