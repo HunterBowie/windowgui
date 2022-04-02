@@ -1,3 +1,4 @@
+from turtle import color
 import pygame
 from os import path
 from .constants import Constants
@@ -15,7 +16,8 @@ class Colors:
     GOLD = (200, 200, 30)
     GREY = (128, 128, 128)
     LIGHT_YELLOW = (200, 200, 0)
-    LIGHT_RED = (255, 50, 50) 
+    LIGHT_RED = (255, 50, 50)
+    LIGHT_GREEN = (50, 200, 50)
 
 def get_surf(size, color, alpha):
     surf = pygame.Surface(size, pygame.SRCALPHA)
@@ -54,7 +56,7 @@ def root_rect(screen_size, rect, top_y=False, bottom_y=False,
 
     
 
-def load_img(img_name, img_path, ext=".png", colorkey=Colors.BLACK, convert=False, scale=None):
+def load_img(img_name, img_path, ext=".png", colorkey=None, convert=False, scale=None):
     full_path = path.join(img_path, img_name) + ext
     try:
         img = pygame.image.load(full_path)
@@ -64,11 +66,9 @@ def load_img(img_name, img_path, ext=".png", colorkey=Colors.BLACK, convert=Fals
         img = pygame.transform.scale(img, scale)
     if convert:
         img = img.convert()
-    img.set_colorkey(Colors.BLACK)
+    if colorkey:
+        img.set_colorkey(Colors.BLACK)
     return img
-
-
-
 
 
 class Flash:
