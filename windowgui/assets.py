@@ -1,3 +1,4 @@
+from turtle import color
 import pygame
 from os import path
 from .util import Colors, load_img
@@ -29,22 +30,25 @@ class Assets:
 
 
     @classmethod
-    def get_button_img(cls, pressed, scale, color_name):
+    def get_button_img(cls, pressed, scale, color_style):
         shape = "_square"
         if scale[0] > scale[1] * 1.50:
             shape = "_long"
         img_name = ""
         if pressed:
-            img_name = color_name + "_button_down" + shape
+            img_name = color_style + "_button_down" + shape
         else:
-            img_name = color_name + "_button_up" + shape
+            img_name = color_style + "_button_up" + shape
         img = load_img(img_name, cls.IMAGES_DIR)
         return pygame.transform.scale(img, scale)
     
     @classmethod
-    def get_slider_img(cls):
-        pass
-
+    def get_slider_img(cls, direction, color_style):
+        img_name = color_style + "_slider"
+        direction = direction[0].upper() + direction[1:]
+        img_name = img_name + direction
+        img = load_img(img_name, cls.IMAGES_DIR)
+        return img
 
     @classmethod
     def get_checkbox_img(cls):

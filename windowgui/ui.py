@@ -1,4 +1,5 @@
 import pygame, pyperclip
+from numpy import interp
 from .util import Colors, render_border
 from .assets import Assets
 from .text import Text, get_text_size
@@ -25,7 +26,7 @@ class UIElement:
                 
 
 class Button(UIElement):
-    def __init__(self, id, x, y, width, height, color_name="white", top_img=None, hide_button=False):
+    def __init__(self, id, x, y, width, height, color_style="white", top_img=None, hide_button=False):
         super().__init__(id, x, y, width, height)
         self.clicked = False
         self.top_img = top_img
@@ -35,8 +36,8 @@ class Button(UIElement):
             self.top_img_x = int(self.rect.width/2-self.top_img.get_width()/2)
             self.top_img_y = int(self.rect.height/2-self.top_img.get_height()/2)
             
-        self._img_up = Assets.get_button_img(False, (width, height), color_name)
-        self._img_down = Assets.get_button_img(True, (width, height-4), color_name)
+        self._img_up = Assets.get_button_img(False, (width, height), color_style)
+        self._img_down = Assets.get_button_img(True, (width, height-4), color_style)
     
     def eventloop(self, event):
         pos = pygame.mouse.get_pos()
@@ -68,7 +69,29 @@ class Button(UIElement):
 
 
 class Slider(UIElement):
-    pass
+    def __init__(self, id, x, y, width, height, color_style="white"):
+        super().__init__(id, x, y, width, height)
+        self.value = 0
+        self._slider_img = Assets.get_slider_img("up", color_style)
+        self.mouse_held = False
+    
+    def get_mapped_value(self):
+        return int(interp(self.value, [0, 100], [0, self.rect.width]))
+    
+    def set_range_value(self, mapped_value):
+        self.value = int(interp(mapped_value, [0, self.rect.width], [0, 100]))
+    
+    def eventloop(self, event):
+        mouse_pos = pygame.mouse.get_pos()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            pass
+    
+    def update(self):
+        pass
+
+    def render(self, screen):
+        pygame.draw.line(screen, Colors.BLACK, (self.rect.left, self.rect.centery), (self.rect.right, self.rect.centery), 4)
+        screen.blit(self._slider_img, (self.rect.x+self.get_mapped_value()-int(self._slider_img.get_width()/2), self.rect.centery-int(self._slider_img.get_height()/2)))
 
 class TextBox(UIElement):
     def __init__(self, id, x, y, width, height, format=None, border=True):
