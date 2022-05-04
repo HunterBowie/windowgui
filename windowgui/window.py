@@ -1,3 +1,4 @@
+from os import stat
 import pygame
 from .util import Colors
 
@@ -6,7 +7,7 @@ class Window:
         self.screen = pygame.display.set_mode(screen_size)
         self.clock = pygame.time.Clock()
         self.max_fps = 60
-        self.ui_manager = None
+        self.manager = None
         self.running = False
         self.bg_color = Colors.RED
         self.flashes = []
@@ -19,24 +20,23 @@ class Window:
         self.running = True
         while self.running:
             self.update()
-        if self.ui_manager:
-            self.ui_manager.stop()
+        if self.manager:
+            self.manager._end()
         pygame.quit()
 
-
     def eventloop(self, event):
-        if self.ui_manager:
-            self.ui_manager.eventloop(event)
+        if self.manager:
+            self.manager._eventloop(event)
 
         if event.type == pygame.QUIT:
             self.running = False
-    
+        
     def update(self):
         for event in pygame.event.get():
             self.eventloop(event)
         
-        if self.ui_manager:
-            self.ui_manager.update()
+        if self.manager:
+            self.manager._update()
         
         finished_flahes = []
         for flash in self.flashes:
@@ -49,6 +49,6 @@ class Window:
             self.flashes.remove(flash)
 
         pygame.display.flip()
-        self.screen.fill(self.bg_color)
         self.clock.tick(self.max_fps)
+        self.screen.fill(self.bg_color)
 

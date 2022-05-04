@@ -204,28 +204,3 @@ class TextBox(UIElement):
             text.render(surface)
 
 
-
-class UIManager:
-    def __init__(self, window):
-        self.window = window
-        self.ui = []
-    
-    def stop(self):
-        pass
-    
-    def get_element(self, id):
-        for element in self.ui:
-            if element.id == id:
-                return element
-        raise ValueError(f"no element with id: {id}")
-
-    def eventloop(self, event):
-        for element in self.ui:
-            element.eventloop(event)
-    
-    def update(self):
-        for element in self.ui:
-            element.update()
-            element.render(self.window.screen)
-
-
