@@ -1,16 +1,12 @@
+"""
+A collection of UI elements to use with the UI manager.
+"""
+
 import pygame, pyperclip
 from numpy import interp
-from .util import Colors, render_border
+from .util import render_border, Text, get_text_size, RealTimer
 from .assets import Assets
-from .text import Text, get_text_size
-from .constants import Constants
-from .timers import RealTimer
-
-class UIEvent:
-    BUTTON_CLICK = pygame.USEREVENT 
-    TEXTBOX_POST = pygame.USEREVENT + 1
-
-
+from .constants import *
 
 class UIElement:
     def __init__(self, id, x, y, width, height):
@@ -45,14 +41,12 @@ class Button(UIElement):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(pos):
                 self.clicked = True
-                self.post_event(UIEvent.BUTTON_CLICK) 
+                self.post_event(Event.BUTTON_CLICK) 
     
     def update(self):
         pos = pygame.mouse.get_pos()
         if not pygame.mouse.get_pressed() == (1, 0, 0):
             self.clicked = False
-                
-        
 
     def render(self, surface):
         if not self.hide_button:
@@ -140,7 +134,7 @@ class TextBox(UIElement):
                     if self.text.string:
                         self.text.pop()
                 elif key_name == "return":
-                    self.post_event(UIEvent.TEXTBOX_POST)
+                    self.post_event(Event.TEXTBOX_POST)
 
                 elif len(key_name) == 1:
                     string_data = key_name
@@ -182,10 +176,6 @@ class TextBox(UIElement):
         surf = pygame.Surface((self.rect.width, self.rect.height), pygame.SRCALPHA)
         self.text.render(surf)
         surface.blit(surf, (self.rect.x + Constants.TEXTBOX_MARGIN, self.rect.y))
-
-
-        
-        
         
         # render cursor
         if self.selected:
@@ -202,5 +192,29 @@ class TextBox(UIElement):
             text = Text(x, 0, string)
             text.center_y(self.rect)
             text.render(surface)
+
+
+class UIManager:
+    """
+    A built in Manager class that handles updating and provides an interface for UI.
+    """
+    def __init__(self, window):
+        self.window = window
+        self.ui = []
+    
+    def get_element(self, id):
+        for element in self.ui:
+            if element.id == id:
+                return element
+        raise ValueError(f"No element with id: {id}")
+
+    def eventloop(self, event):
+        for element in self.ui:
+            element.eventloop(event)
+    
+    def update(self):
+        for element in self.ui:
+            element.update()
+            element.render(self.window.screen)
 
 

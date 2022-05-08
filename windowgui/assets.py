@@ -1,9 +1,12 @@
-from turtle import color
 import pygame
 from os import path
-from .util import Colors, load_img
+from .util import load_image
+
 
 def get_asset(type, name):
+    """
+    A function for getting windowgui images, fonts, and sounds.
+    """
     if type == "images":
         print(load_img(name, Assets.IMAGES_DIR, colorkey=None))
         return load_img(name, Assets.IMAGES_DIR, colorkey=None)
@@ -11,10 +14,7 @@ def get_asset(type, name):
         return Assets.FONTS[name]
     if type == "sounds":
         pass
-def get_dir(name):
-    if name == "images":
-        return Assets.IMAGES_DIR
-    
+
 
 class Assets:
     CURRENT_DIR = path.dirname(__file__)
@@ -27,8 +27,6 @@ class Assets:
         "rounded": path.join(FOUNTS_DIR, "rounded.ttf")
     }
 
-
-
     @classmethod
     def get_button_img(cls, pressed, scale, color_style):
         shape = "_square"
@@ -39,15 +37,15 @@ class Assets:
             img_name = color_style + "_button_down" + shape
         else:
             img_name = color_style + "_button_up" + shape
-        img = load_img(img_name, cls.IMAGES_DIR)
+        img = load_image(img_name, cls.IMAGES_DIR)
         return pygame.transform.scale(img, scale)
     
     @classmethod
-    def get_slider_img(cls, direction, color_style):
+    def get_slider_image(cls, direction, color_style):
         img_name = color_style + "_slider"
         direction = direction[0].upper() + direction[1:]
         img_name = img_name + direction
-        img = load_img(img_name, cls.IMAGES_DIR)
+        img = load_image(img_name, cls.IMAGES_DIR)
         return img
 
     @classmethod
