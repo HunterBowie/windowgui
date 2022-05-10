@@ -3,17 +3,19 @@ from os import path
 from .util import load_image
 
 
-def get_asset(type, name):
+def load_asset(type, name):
     """
     A function for getting windowgui images, fonts, and sounds.
     """
     if type == "images":
-        print(load_img(name, Assets.IMAGES_DIR, colorkey=None))
-        return load_img(name, Assets.IMAGES_DIR, colorkey=None)
+        print(load_image(name, Assets.IMAGES_DIR, colorkey=None))
+        return load_image(name, Assets.IMAGES_DIR, colorkey=None)
     if type == "fonts":
         return Assets.FONTS[name]
     if type == "sounds":
         pass
+
+    raise ValueError(f"type: {type} is not a valid asset type")
 
 
 class Assets:
@@ -24,7 +26,8 @@ class Assets:
 
     FONTS = {
         "regular": pygame.font.get_default_font(),
-        "rounded": path.join(FOUNTS_DIR, "rounded.ttf")
+        "rounded": path.join(FOUNTS_DIR, "rounded.ttf"),
+        "future": path.join(FOUNTS_DIR, "future.ttf")
     }
 
     @classmethod

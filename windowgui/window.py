@@ -2,7 +2,6 @@ import pygame
 from .util import Colors
 from .flash import FlashManager
 from .ui import UIManager
-from .sound import SoundManager
 
 class Window:
     """
@@ -12,13 +11,12 @@ class Window:
     def __init__(self, screen_size):
         self.screen = pygame.display.set_mode(screen_size)
         self.clock = pygame.time.Clock()
-        self.max_fps = 60
         self.running = False
+        self.max_fps = 60
         self.bg_color = Colors.RED
         self.managers = {
         "flash": FlashManager(self),
         "ui": UIManager(self),
-        "sound": SoundManager(self)
         }
     
     def start(self, auto_cycle=True):

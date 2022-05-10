@@ -1,26 +1,26 @@
-import pygame
+import pygame, time
 from os import path
 from .constants import Colors
 
 
 class Text:
     """
-    A class for handling text rendering and format.
+    A class for handling text rendering and style.
     """
-    default_format = {
+    default_style = {
         "font_file": pygame.font.get_default_font(),
         "size": 30,
         "antialias": True,
         "color": Colors.BLACK
     }
 
-    def __init__(self, x, y, string, format=None, newline_width=None):
-        self.format = format
-        if self.format is None:
-            self.format = self.default_format.copy()
-        for setting, value in self.default_format.items():
-            if setting not in self.format:
-                self.format[setting] = value
+    def __init__(self, x, y, string, style=None, newline_width=None):
+        self.style = style
+        if self.style is None:
+            self.style = self.default_style.copy()
+        for setting, value in self.default_style.items():
+            if setting not in self.style:
+                self.style[setting] = value
         self.x = x
         self.y = y
         self.newline_width = newline_width
@@ -36,7 +36,7 @@ class Text:
                 new_line = "" 
                 for char in line:
                     new_line = new_line + char
-                    if get_text_size(new_line, self.format)[0] >= self.newline_width:
+                    if get_text_size(new_line, self.style)[0] >= self.newline_width:
                         new_lines.append(new_line.strip())
                         new_line = ""
                 if new_line:
@@ -65,12 +65,12 @@ class Text:
         return pygame.Rect(self.x, self.y, self.get_width(), self.get_height())
     
     def _load_surf(self):
-        font = pygame.font.Font(self.format["font_file"], self.format["size"])
+        font = pygame.font.Font(self.style["font_file"], self.style["size"])
 
         if len(self.lines) > 1:
             renders = []    
             for string in self.lines:
-                renders.append(font.render(string, self.format["antialias"], self.format["color"]))
+                renders.append(font.render(string, self.style["antialias"], self.style["color"]))
             
             height = 0
             width = 0
@@ -86,7 +86,7 @@ class Text:
                 y += line_surf.get_height()
             
         else:
-            self.surface = font.render(self.string, self.format["antialias"], self.format["color"])
+            self.surface = font.render(self.string, self.style["antialias"], self.style["color"])
     
     def render(self, screen):
         screen.blit(self.surface, (self.x, self.y))
@@ -105,13 +105,13 @@ def render_text_background(surface, text, color, alpha, margin):
     surf = get_surf((text.get_width()+margin, text.get_height()+margin), color, alpha)
     surface.blit(surf, (int(text.x-margin/2), int(text.y-margin/2)))
 
-def get_text_size(string, format=Text.default_format):
-    if format != Text.default_format:
-        for setting, value in Text.default_format.items():
-            if setting not in format:
-                format[setting] = value
-    font = pygame.font.Font(format["font_file"], format["size"])
-    surf = font.render(string, format["antialias"], format["color"])
+def get_text_size(string, style=Text.default_style):
+    if style != Text.default_style:
+        for setting, value in Text.default_style.items():
+            if setting not in style:
+                style[setting] = value
+    font = pygame.font.Font(style["font_file"], style["size"])
+    surf = font.render(string, style["antialias"], style["color"])
     return surf.get_width(), surf.get_height()
 
 
@@ -196,13 +196,13 @@ def root_rect(screen_size, rect, top=False, bottom=False,
         new_x = center_pos[0]-int(rect.width/2)
     if center_y:
         new_y = center_pos[1]-int(rect.height/2)
-    if left_x:
+    if left:
         new_x = 0
-    if right_x:
+    if right:
         new_x = screen_size[0]-rect.width
-    if bottom_y:
+    if bottom:
         new_y = screen_size[1]-rect.height
-    if top_y:
+    if top:
         new_y = 0
     rect.x += new_x
     rect.y += new_y
