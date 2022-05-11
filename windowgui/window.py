@@ -11,6 +11,7 @@ class Window:
     def __init__(self, screen_size):
         self.screen = pygame.display.set_mode(screen_size)
         self.clock = pygame.time.Clock()
+        self.max_fps = 60
         self.running = False
         self.max_fps = 60
         self.bg_color = Colors.RED
