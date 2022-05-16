@@ -7,24 +7,22 @@ class Window:
     """
     A class for handling window settings and updating managers.
     """
-
     def __init__(self, screen_size):
         self.screen = pygame.display.set_mode(screen_size)
         self.clock = pygame.time.Clock()
-        self.max_fps = 60
         self.running = False
         self.max_fps = 60
         self.bg_color = Colors.RED
         self.managers = {
-        "flash": FlashManager(self),
         "ui": UIManager(self),
+        "flash": FlashManager(self)
         }
     
-    def start(self, auto_cycle=True):
+    def start(self, auto_cycle=False):
         self.running = True
         if auto_cycle:
             while self.running:
-                self.update()
+                self.update(auto_eventloop=True)
             self.end()
 
     def end(self):
@@ -41,7 +39,7 @@ class Window:
         if event.type == pygame.QUIT:
             self.running = False
         
-    def update(self, auto_eventloop=True):
+    def update(self, auto_eventloop=False):
         if auto_eventloop:
             for event in pygame.event.get():
                 self.eventloop(event)

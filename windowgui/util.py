@@ -208,7 +208,7 @@ def root_rect(screen_size, rect, top=False, bottom=False,
     rect.y += new_y
     return rect.x, rect.y
 
-def load_image(img_name, img_path, ext=".png", colorkey=None, convert=False, scale=None):
+def load_image(img_name, img_path, ext=".png", colorkey=(0, 0, 0), convert=True, scale=None):
     full_path = path.join(img_path, img_name) + ext
     try:
         img = pygame.image.load(full_path)
@@ -217,7 +217,7 @@ def load_image(img_name, img_path, ext=".png", colorkey=None, convert=False, sca
     if scale is not None:
         img = pygame.transform.scale(img, scale)
     if convert:
-        img = img.convert()
+        img = img.convert_alpha()
     if colorkey:
         img.set_colorkey(Colors.BLACK)
     return img

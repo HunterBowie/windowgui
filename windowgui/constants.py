@@ -17,6 +17,21 @@ M_FLASH_KEY = "flash"
 M_UI_KEY = "ui"
 M_SOUND_KEY = "sound"
 
+class AssetType:
+    IMAGES = 1
+    SOUND = 2
+    FONT = 3
+
+
+
+class UIColorStyle:
+    WHITE = "white"
+    RED = "red"
+    GREEN = "green"
+    YELLOW = "yellow"
+    BLUE = "blue"
+
+
 class Event:
     BUTTON_CLICK = pygame.USEREVENT 
     TEXTBOX_POST = pygame.USEREVENT + 1
@@ -32,9 +47,8 @@ class Colors:
     PURPLE = (150, 50, 250)
     GOLD = (200, 200, 30)
     GREY = (128, 128, 128)
-    LIGHT_YELLOW = (200, 200, 0)
-    LIGHT_RED = (255, 50, 50)
-    LIGHT_GREEN = (50, 200, 50)
+    
+    LIGHT_BLUE = (204, 229, 255)
 
 
 

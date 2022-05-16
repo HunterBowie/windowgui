@@ -2,11 +2,12 @@
 A collection of UI elements to use with the UI manager.
 """
 
-import pygame, pyperclip, assets
+import pygame, pyperclip
 from numpy import interp
+from .assets import get_button_img, get_checkbox_img, get_slider_image
 from .util import render_border, Text, get_text_size, RealTimer
 from .constants import Colors, TEXTBOX_BACKSPACE_DELAY, TEXTBOX_BORDER_WIDTH, TEXTBOX_CURSOR_BLINK_TIME,\
-TEXTBOX_MARGIN, TEXTBOX_SHIFT_CHARS, Event
+TEXTBOX_MARGIN, TEXTBOX_SHIFT_CHARS, Event, UIColorStyle
 
 class UIElement:
     def __init__(self, id, x, y, width, height):
@@ -22,7 +23,10 @@ class UIElement:
                 
 
 class Button(UIElement):
-    def __init__(self, id, x, y, width, height, color_style="white", top_img=None, hide_button=False):
+    """
+    A UI element for togglable or non-togglable buttons.
+    """
+    def __init__(self, id, x, y, width, height, color_style=UIColorStyle.WHITE, top_img=None, hide_button=False):
         super().__init__(id, x, y, width, height)
         self.clicked = False
         self.top_img = top_img
@@ -32,8 +36,8 @@ class Button(UIElement):
             self.top_img_x = int(self.rect.width/2-self.top_img.get_width()/2)
             self.top_img_y = int(self.rect.height/2-self.top_img.get_height()/2)
             
-        self._img_up = assets.get_button_img(False, (width, height), color_style)
-        self._img_down = assets.get_button_img(True, (width, height-4), color_style)
+        self._img_up = get_button_img(False, (width, height), color_style)
+        self._img_down = get_button_img(True, (width, height-4), color_style)
     
     def eventloop(self, event):
         pos = pygame.mouse.get_pos()
@@ -63,31 +67,61 @@ class Button(UIElement):
 
 
 class Slider(UIElement):
-    def __init__(self, id, x, y, width, height, color_style="white"):
+    """
+    A UI element that allows that user to slide an arrow to ajust a value from 0-100.
+    """
+    def __init__(self, id, x, y, width, height, color_style=UIColorStyle.WHITE):
         super().__init__(id, x, y, width, height)
         self.value = 0
-        self._slider_img = assets.get_slider_img("up", color_style)
+        self._slider_img = get_slider_image("up", color_style)
         self.mouse_held = False
     
+    def calc_slider_pos(self):
+        return self.rect.x+self.get_mapped_value()-int(self._slider_img.get_width()/2), self.rect.centery-int(self._slider_img.get_height()/2)
+    
+    def get_slider_rect(self):
+        x, y = self.calc_slider_pos()
+        return pygame.Rect(x, y, self._slider_img.get_width(), self._slider_img.get_height())
+
     def get_mapped_value(self):
         return int(interp(self.value, [0, 100], [0, self.rect.width]))
     
     def set_range_value(self, mapped_value):
         self.value = int(interp(mapped_value, [0, self.rect.width], [0, 100]))
     
+    def change_value(self, change):
+        self.value += change
+        if self.value < 0:
+            self.value = 0
+        elif self.value > 100:
+            self.value = 100
+    
     def eventloop(self, event):
         mouse_pos = pygame.mouse.get_pos()
         if event.type == pygame.MOUSEBUTTONDOWN:
-            pass
+            if self.get_slider_rect().collidepoint(mouse_pos):
+                self.mouse_held = True
+        elif event.type == pygame.MOUSEBUTTONUP:
+            self.mouse_held = False
     
     def update(self):
-        pass
+        mouse_pos = pygame.mouse.get_pos()
+        if not self.get_slider_rect().collidepoint(mouse_pos):
+            self.mouse_held = False
+        
+        if self.mouse_held and self.get_slider_rect().center[0] < mouse_pos[0]:
+            self.change_value(1)
+        elif self.mouse_held and self.get_slider_rect().center[0] > mouse_pos[0]:
+            self.change_value(-1)
 
     def render(self, screen):
         pygame.draw.line(screen, Colors.BLACK, (self.rect.left, self.rect.centery), (self.rect.right, self.rect.centery), 4)
-        screen.blit(self._slider_img, (self.rect.x+self.get_mapped_value()-int(self._slider_img.get_width()/2), self.rect.centery-int(self._slider_img.get_height()/2)))
+        screen.blit(self._slider_img, self.calc_slider_pos())
 
 class TextBox(UIElement):
+    """
+    A UI element for getting text from the user.
+    """
     def __init__(self, id, x, y, width, height, style=None, border=True):
         super().__init__(id, x, y, width, height)
         if style is None:
@@ -201,6 +235,9 @@ class UIManager:
     def __init__(self, window):
         self.window = window
         self.ui = []
+    
+    def add(self, element):
+        self.ui.append(element)
     
     def get_element(self, id):
         for element in self.ui:

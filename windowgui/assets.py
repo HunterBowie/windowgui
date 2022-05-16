@@ -1,6 +1,7 @@
 import pygame
 from os import path
 from .util import load_image
+from .constants import AssetType, Colors
 
 
 CURRENT_DIR = path.dirname(__file__)
@@ -36,16 +37,3 @@ def get_slider_image(direction, color_style):
 def get_checkbox_img():
     pass
 
-
-def load_asset(type, name):
-    """
-    A function for getting windowgui images, fonts, and sounds.
-    """
-    if type == "images":
-        return load_image(name, IMAGES_DIR, colorkey=None)
-    if type == "fonts":
-        return FONTS[name]
-    if type == "sounds":
-        pass
-
-    raise ValueError(f"type: {type} is not a valid asset type")
