@@ -75,6 +75,7 @@ class Slider(UIElement):
         self.value = 0
         self._slider_img = get_slider_image("up", color_style)
         self.mouse_held = False
+        self.release_timer = RealTimer()
     
     def calc_slider_pos(self):
         return self.rect.x+self.get_mapped_value()-int(self._slider_img.get_width()/2), self.rect.centery-int(self._slider_img.get_height()/2)
@@ -109,10 +110,10 @@ class Slider(UIElement):
         if not self.get_slider_rect().collidepoint(mouse_pos):
             self.mouse_held = False
         
-        if self.mouse_held and self.get_slider_rect().center[0] < mouse_pos[0]:
-            self.change_value(1)
-        elif self.mouse_held and self.get_slider_rect().center[0] > mouse_pos[0]:
-            self.change_value(-1)
+        if self.mouse_held:
+            mouse_value = mouse_pos[0]-self.rect.x
+            if mouse_value > -1 and mouse_value <= self.rect.width:
+                self.set_range_value(mouse_value)
 
     def render(self, screen):
         pygame.draw.line(screen, Colors.BLACK, (self.rect.left, self.rect.centery), (self.rect.right, self.rect.centery), 4)
