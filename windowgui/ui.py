@@ -2,12 +2,13 @@
 A collection of UI elements to use with the UI manager.
 """
 
-import pygame, pyperclip
+import pygame, pyperclip, math
 from numpy import interp
 from .assets import get_button_img, get_checkbox_img, get_slider_image
 from .util import render_border, Text, get_text_size, RealTimer
 from .constants import Colors, TEXTBOX_BACKSPACE_DELAY, TEXTBOX_BORDER_WIDTH, TEXTBOX_CURSOR_BLINK_TIME,\
-TEXTBOX_MARGIN, TEXTBOX_SHIFT_CHARS, Event, UIColorStyle
+TEXTBOX_MARGIN, TEXTBOX_SHIFT_CHARS, UIEvent, UIColorStyle, SLIDER_HELD_DIST_X, SLIDER_HELD_DIST_Y, \
+TEXTBOX_BACKSPACE_START_DELAY
 
 class UIElement:
     def __init__(self, id, x, y, width, height):
@@ -45,12 +46,14 @@ class Button(UIElement):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(pos):
                 self.clicked = True
-                self.post_event(Event.BUTTON_CLICK) 
+                self.post_event(UIEvent.BUTTON_CLICKED) 
     
     def update(self):
         pos = pygame.mouse.get_pos()
-        if not pygame.mouse.get_pressed() == (1, 0, 0):
+        if not pygame.mouse.get_pressed() == (1, 0, 0) and self.clicked:
             self.clicked = False
+            self.post_event(UIEvent.BUTTON_RELEASED)
+
 
     def render(self, surface):
         if not self.hide_button:
@@ -74,8 +77,7 @@ class Slider(UIElement):
         super().__init__(id, x, y, width, height)
         self.value = 0
         self._slider_img = get_slider_image("up", color_style)
-        self.mouse_held = False
-        self.release_timer = RealTimer()
+        self._mouse_held = False
     
     def calc_slider_pos(self):
         return self.rect.x+self.get_mapped_value()-int(self._slider_img.get_width()/2), self.rect.centery-int(self._slider_img.get_height()/2)
@@ -89,28 +91,30 @@ class Slider(UIElement):
     
     def set_range_value(self, mapped_value):
         self.value = int(interp(mapped_value, [0, self.rect.width], [0, 100]))
-    
-    def change_value(self, change):
-        self.value += change
-        if self.value < 0:
-            self.value = 0
-        elif self.value > 100:
-            self.value = 100
+        self.post_event(UIEvent.SLIDER_MOVED)
     
     def eventloop(self, event):
         mouse_pos = pygame.mouse.get_pos()
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.get_slider_rect().collidepoint(mouse_pos):
-                self.mouse_held = True
+                self._mouse_held = True
         elif event.type == pygame.MOUSEBUTTONUP:
-            self.mouse_held = False
+            self._mouse_held = False
+        
+    def get_slider_distance_x(self, pos):
+        return math.dist((self.get_slider_rect().center[0], 0), (pos[0], 0))
+    
+    def get_slider_distance_y(self, pos):
+        return math.dist((0, self.get_slider_rect().center[1]), (0, pos[1]))   
     
     def update(self):
         mouse_pos = pygame.mouse.get_pos()
-        if not self.get_slider_rect().collidepoint(mouse_pos):
-            self.mouse_held = False
-        
-        if self.mouse_held:
+   
+        if self._mouse_held:
+            if self.get_slider_distance_x(mouse_pos) > SLIDER_HELD_DIST_X:
+                self._mouse_held = False
+            elif self.get_slider_distance_y(mouse_pos) > SLIDER_HELD_DIST_Y:
+                self._mouse_held = False
             mouse_value = mouse_pos[0]-self.rect.x
             if mouse_value > -1 and mouse_value <= self.rect.width:
                 self.set_range_value(mouse_value)
@@ -123,21 +127,22 @@ class TextBox(UIElement):
     """
     A UI element for getting text from the user.
     """
-    def __init__(self, id, x, y, width, height, style=None, border=True):
+    def __init__(self, id, x, y, width, height, text_style=None, border_size=3):
         super().__init__(id, x, y, width, height)
-        if style is None:
+        if text_style is None:
             self.text = Text(0, 0, "", {"size": 20})
         
         else:
-            self.text = Text(0, 0, "", style)
+            self.text = Text(0, 0, "", text_style)
         
-        self.border = border
+        
         self.selected = False
-        self.cursor_blink = True
-        self.cursor_timer = RealTimer()
-        self.cursor_timer.start()
-        self.backspace_timer = RealTimer()
-        self.held_backspace_timer = RealTimer()
+        self._border_size = border_size
+        self._cursor_blink = True
+        self._cursor_timer = RealTimer()
+        self._cursor_timer.start()
+        self._backspace_timer = RealTimer()
+        self._held_backspace_timer = RealTimer()
 
 
     def is_appendable(self, string):
@@ -152,7 +157,9 @@ class TextBox(UIElement):
         pos = pygame.mouse.get_pos()
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(pos):
-                self.selected = True
+                if not self.selected:
+                    self.selected = True
+                    self.post_event(UIEvent.TEXTBOX_SELECTED)
             else:
                 self.selected = False
 
@@ -164,12 +171,12 @@ class TextBox(UIElement):
                     if self.is_appendable(" "):
                         self.text.add(" ")
                 elif key_name == "backspace":
-                    self.backspace_timer.reset()
-                    self.held_backspace_timer.reset()
+                    self._backspace_timer.start()
+                    self._held_backspace_timer.start()
                     if self.text.string:
                         self.text.pop()
                 elif key_name == "return":
-                    self.post_event(Event.TEXTBOX_POST)
+                    self.post_event(UIEvent.TEXTBOX_POSTED)
 
                 elif len(key_name) == 1:
                     string_data = key_name
@@ -186,28 +193,27 @@ class TextBox(UIElement):
                     hit_key = False
                 
                 if hit_key:
-                    self.cursor_timer.reset()
-                    self.cursor_blink = True
+                    self._cursor_timer.start()
+                    self._cursor_blink = True
 
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_BACKSPACE:
-                    self.backspace_timer.reset()
-                    self.backspace_timer.stop()
+                    self._backspace_timer.reset()
     
     def update(self):
         self.text.center_y(pygame.Rect(0, 0, self.rect.width, self.rect.height))
         keys = pygame.key.get_pressed()
         if self.selected:
             if keys[pygame.K_BACKSPACE]:
-                if self.backspace_timer.passed(TEXTBOX_BACKSPACE_DELAY*2):
-                    if self.held_backspace_timer.passed(TEXTBOX_BACKSPACE_DELAY):
-                        self.held_backspace_timer.reset()
+                if self._backspace_timer.passed(TEXTBOX_BACKSPACE_START_DELAY):
+                    if self._held_backspace_timer.passed(TEXTBOX_BACKSPACE_DELAY):
+                        self._held_backspace_timer.start()
                         if self.text.string:
                             self.text.pop()
                 
         
     def render(self, surface):
-        render_border(surface, self.rect, 3)
+        render_border(surface, self.rect, self._border_size)
         surf = pygame.Surface((self.rect.width, self.rect.height), pygame.SRCALPHA)
         self.text.render(surf)
         surface.blit(surf, (self.rect.x + TEXTBOX_MARGIN, self.rect.y))
@@ -216,17 +222,53 @@ class TextBox(UIElement):
         if self.selected:
             x = self.rect.x+TEXTBOX_MARGIN+self.text.get_width()
             string = ""
-            if self.cursor_blink:
+            if self._cursor_blink:
                 string = "|"
             
-            if self.cursor_timer.passed(TEXTBOX_CURSOR_BLINK_TIME):
-                self.cursor_timer.reset()
-                self.cursor_blink = not self.cursor_blink
+            if self._cursor_timer.passed(TEXTBOX_CURSOR_BLINK_TIME):
+                self._cursor_timer.start()
+                self._cursor_blink = not self._cursor_blink
             
 
             text = Text(x, 0, string)
             text.center_y(self.rect)
             text.render(surface)
+
+
+class CheckBox(UIElement):
+    """
+    A UI element that acts like a togglable button.
+    """
+    TICK_SYMBOL = "tick"
+    CROSS_SYMBOL = "cross"
+    CHECK_SYMBOL = "checkmark"
+    def __init__(self, id, x, y, width, height, symbol=CHECK_SYMBOL, color_style=UIColorStyle.WHITE, checked=False):
+        super().__init__(id, x, y, width, height)
+        self._filled_image = get_checkbox_img(True, color_style, symbol, self.rect.size)
+        self._empty_image = get_checkbox_img(False, color_style, symbol, self.rect.size)
+        self.checked = checked
+        self.update_image()
+
+    def update_image(self):
+        if self.checked:
+            self._image = self._filled_image
+        else:
+            self._image = self._empty_image
+        
+    
+    def eventloop(self, event):
+        mouse_pos = pygame.mouse.get_pos()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.rect.collidepoint(mouse_pos):
+                self.checked = not self.checked
+                self.update_image()
+                self.post_event(UIEvent.CHECKBOX_CLICKED)
+    
+    def update(self):
+        pass
+
+    def render(self, screen):
+        screen.blit(self._image, self.rect.topleft)
 
 
 class UIManager:
@@ -239,6 +281,9 @@ class UIManager:
     
     def add(self, element):
         self.ui.append(element)
+    
+    def clear(self):
+        self.ui = []
     
     def get_element(self, id):
         for element in self.ui:

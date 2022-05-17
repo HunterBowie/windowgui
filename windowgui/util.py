@@ -120,11 +120,11 @@ class RealTimer:
     A class for calculating time in seconds.
     """
     def __init__(self):
-        self.start_time = -1
-        self.stop_time = -1
+        self.reset()
     
     def start(self):
-        self.reset()
+        self.start_time = time.monotonic()
+        self.stop_time = -1
     
     def get(self):
         if self.start_time == -1:
@@ -135,7 +135,7 @@ class RealTimer:
         return self.stop_time-self.start_time
     
     def reset(self):
-        self.start_time = time.monotonic()
+        self.start_time = -1
         self.stop_time = -1
 
     def stop(self):
@@ -143,6 +143,12 @@ class RealTimer:
     
     def passed(self, seconds):
         return self.get() >= seconds
+    
+    def stopped(self):
+        return self.stop_time != -1
+    
+    def started(self):
+        return self.start_time != -1
     
     def __repr__(self):
         return f"time: {self.get()}"

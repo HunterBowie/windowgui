@@ -34,6 +34,13 @@ def get_slider_image(direction, color_style):
     img = load_image(img_name, IMAGES_DIR)
     return img
 
-def get_checkbox_img():
-    pass
+def get_checkbox_img(filled, color_style, symbol, scale):
+    if filled:
+        symbol = symbol[0].upper() + symbol[1:]
+        return load_image(f"{color_style}_box{symbol}", IMAGES_DIR, scale=scale)
+    
+    if symbol != "tick":
+        return load_image("white_box", IMAGES_DIR, scale=scale)
+    return load_image("white_circle", IMAGES_DIR, scale=scale)
+        
 
