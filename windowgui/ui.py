@@ -6,15 +6,9 @@ import pygame, pyperclip, math
 from numpy import interp
 from .assets import get_button_img, get_checkbox_img, get_slider_image
 from .util import render_border, Text, get_text_size, RealTimer
-<<<<<<< HEAD
-from .assets import Assets
-from .constants import Colors, TEXTBOX_BACKSPACE_DELAY, TEXTBOX_BORDER_WIDTH, TEXTBOX_CURSOR_BLINK_TIME,\
-TEXTBOX_MARGIN, TEXTBOX_SHIFT_CHARS, Event
-=======
 from .constants import Colors, TEXTBOX_BACKSPACE_DELAY, TEXTBOX_BORDER_WIDTH, TEXTBOX_CURSOR_BLINK_TIME,\
 TEXTBOX_MARGIN, TEXTBOX_SHIFT_CHARS, UIEvent, UIColorStyle, SLIDER_HELD_DIST_X, SLIDER_HELD_DIST_Y, \
 TEXTBOX_BACKSPACE_START_DELAY
->>>>>>> d41f0815f6cbb58bda6725272bcced867d33bfaf
 
 class UIElement:
     def __init__(self, id, x, y, width, height):
@@ -130,15 +124,6 @@ class Slider(UIElement):
         screen.blit(self._slider_img, self.calc_slider_pos())
 
 class TextBox(UIElement):
-<<<<<<< HEAD
-    def __init__(self, id, x, y, width, height, style=None, border=True):
-        super().__init__(id, x, y, width, height)
-        if style is None:
-            self.text = Text(0, 0, "", {"size": 20})
-        
-        else:
-            self.text = Text(0, 0, "", style)
-=======
     """
     A UI element for getting text from the user.
     """
@@ -150,7 +135,6 @@ class TextBox(UIElement):
         else:
             self.text = Text(0, 0, "", text_style)
         
->>>>>>> d41f0815f6cbb58bda6725272bcced867d33bfaf
         
         self.selected = False
         self._border_size = border_size
@@ -221,15 +205,9 @@ class TextBox(UIElement):
         keys = pygame.key.get_pressed()
         if self.selected:
             if keys[pygame.K_BACKSPACE]:
-<<<<<<< HEAD
-                if self.backspace_timer.passed(TEXTBOX_BACKSPACE_DELAY*2):
-                    if self.held_backspace_timer.passed(TEXTBOX_BACKSPACE_DELAY):
-                        self.held_backspace_timer.reset()
-=======
                 if self._backspace_timer.passed(TEXTBOX_BACKSPACE_START_DELAY):
                     if self._held_backspace_timer.passed(TEXTBOX_BACKSPACE_DELAY):
                         self._held_backspace_timer.start()
->>>>>>> d41f0815f6cbb58bda6725272bcced867d33bfaf
                         if self.text.string:
                             self.text.pop()
                 
@@ -247,15 +225,9 @@ class TextBox(UIElement):
             if self._cursor_blink:
                 string = "|"
             
-<<<<<<< HEAD
-            if self.cursor_timer.passed(TEXTBOX_CURSOR_BLINK_TIME):
-                self.cursor_timer.reset()
-                self.cursor_blink = not self.cursor_blink
-=======
             if self._cursor_timer.passed(TEXTBOX_CURSOR_BLINK_TIME):
                 self._cursor_timer.start()
                 self._cursor_blink = not self._cursor_blink
->>>>>>> d41f0815f6cbb58bda6725272bcced867d33bfaf
             
 
             text = Text(x, 0, string)
@@ -309,6 +281,9 @@ class UIManager:
     
     def add(self, element):
         self.ui.append(element)
+    
+    def combine(self, elements):
+        self.ui = self.ui + elements
     
     def clear(self):
         self.ui = []

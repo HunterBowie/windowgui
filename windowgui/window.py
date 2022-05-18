@@ -12,13 +12,10 @@ class Window:
         self.clock = pygame.time.Clock()
         self.running = False
         self.max_fps = 60
-        self.bg_color = Colors.RED
+        self.bg_color = Colors.WHITE
         self.managers = {
         "ui": UIManager(self),
-<<<<<<< HEAD
-=======
         "flash": FlashManager(self)
->>>>>>> d41f0815f6cbb58bda6725272bcced867d33bfaf
         }
     
     def start(self, auto_cycle=False):

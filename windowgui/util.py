@@ -150,6 +150,10 @@ class RealTimer:
     def started(self):
         return self.start_time != -1
     
+    def wait(self, seconds):
+        while not self.passed(seconds):
+            pass
+    
     def __repr__(self):
         return f"time: {self.get()}"
     
@@ -191,7 +195,7 @@ def render_border(surface, rect, size):
 
 
 def root_rect(screen_size, rect, top=False, bottom=False,
-    left=False, right=False, center_x=False, center_y=False):
+    left=False, right=False, center_x=False, center_y=False) -> (int, int):
     """
     A function for positioning a rect relative to the screen.
     """
@@ -213,6 +217,12 @@ def root_rect(screen_size, rect, top=False, bottom=False,
     rect.x += new_x
     rect.y += new_y
     return rect.x, rect.y
+
+def root_rects(screen_size, rects, top=False, bottom=False,
+    left=False, right=False, center_x=False, center_y=False):
+    for rect in rects:
+        root_rect(screen_size, rect, top, bottom,
+        left, right, center_x, center_y)
 
 def load_image(img_name, img_path, ext=".png", colorkey=(0, 0, 0), convert=True, scale=None):
     full_path = path.join(img_path, img_name) + ext
