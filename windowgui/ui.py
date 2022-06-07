@@ -5,7 +5,7 @@ A collection of UI elements to use with the UI manager.
 import pygame, pyperclip, math
 from numpy import interp
 from .assets import get_button_img, get_checkbox_img, get_slider_image
-from .util import render_border, Text, get_text_size, RealTimer
+from .util import render_border, Text, get_text_size, Timer
 from .constants import Colors, TEXTBOX_BACKSPACE_DELAY, TEXTBOX_BORDER_WIDTH, TEXTBOX_CURSOR_BLINK_TIME,\
 TEXTBOX_MARGIN, TEXTBOX_SHIFT_CHARS, UIEvent, UIColorStyle, SLIDER_HELD_DIST_X, SLIDER_HELD_DIST_Y, \
 TEXTBOX_BACKSPACE_START_DELAY
@@ -39,6 +39,8 @@ class Button(UIElement):
             
         self._img_up = get_button_img(False, (width, height), color_style)
         self._img_down = get_button_img(True, (width, height-4), color_style)
+
+        self._force_down = False
     
     def eventloop(self, event):
         pos = pygame.mouse.get_pos()
@@ -47,6 +49,7 @@ class Button(UIElement):
             if self.rect.collidepoint(pos):
                 self.clicked = True
                 self.post_event(UIEvent.BUTTON_CLICKED) 
+
     
     def update(self):
         pos = pygame.mouse.get_pos()
@@ -57,13 +60,13 @@ class Button(UIElement):
 
     def render(self, surface):
         if not self.hide_button:
-            if self.clicked:
+            if self.clicked or self._force_down:
                 surface.blit(self._img_down, self.rect.topleft)
             else:   
                 surface.blit(self._img_up, (self.rect.left, self.rect.top-4))
         
         if self.top_img:
-            if self.clicked:
+            if self.clicked or self._force_down:
                 surface.blit(self.top_img, (self.top_img_x+self.rect.x, self.top_img_y+self.rect.y))
             else:
                 surface.blit(self.top_img, (self.top_img_x+self.rect.x, self.top_img_y+self.rect.y-4))
@@ -139,10 +142,10 @@ class TextBox(UIElement):
         self.selected = False
         self._border_size = border_size
         self._cursor_blink = True
-        self._cursor_timer = RealTimer()
+        self._cursor_timer = Timer()
         self._cursor_timer.start()
-        self._backspace_timer = RealTimer()
-        self._held_backspace_timer = RealTimer()
+        self._backspace_timer = Timer()
+        self._held_backspace_timer = Timer()
 
 
     def is_appendable(self, string):
@@ -237,7 +240,7 @@ class TextBox(UIElement):
 
 class CheckBox(UIElement):
     """
-    A UI element that acts like a togglable button.
+    A UI element implements a basic togglable button.
     """
     TICK_SYMBOL = "tick"
     CROSS_SYMBOL = "cross"
@@ -270,6 +273,37 @@ class CheckBox(UIElement):
     def render(self, screen):
         screen.blit(self._image, self.rect.topleft)
 
+class TogglableButtonGroup:
+    """
+    A class for grouping and configuring buttons to be togglable with each other.
+    """
+    def __init__(self, buttons):
+        self.buttons = buttons
+        self.ids = [button.id for button in buttons]
+        self.selected = None
+    
+    def eventloop(self, event):
+        for button in self.buttons:
+            button.eventloop(event)
+        if event.type == UIEvent.BUTTON_CLICKED:
+            if event.ui_id in self.ids:
+                clicked_button = event.ui_element
+                clicked_button._force_down = True
+                for button in self.buttons:
+                    if button != clicked_button:
+                        button._force_down = False
+                self.selected = clicked_button
+        
+    def update(self):
+        for button in self.buttons:
+            button.update()
+
+    def render(self, screen):
+        for button in self.buttons:
+            button.render(screen)
+
+        
+
 
 class UIManager:
     """
@@ -279,11 +313,12 @@ class UIManager:
         self.window = window
         self.ui = []
     
-    def add(self, element):
-        self.ui.append(element)
+    def add(self, value):
+        if type(value) is list:
+            self.ui = self.ui + value
+        else:
+            self.ui.append(value)
     
-    def combine(self, elements):
-        self.ui = self.ui + elements
     
     def clear(self):
         self.ui = []
